@@ -1,16 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<?import javafx.scene.control.Button?>
-<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.example.profinal.HelloController">
-  <padding>
-    <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
-  </padding>
-
-  <Label fx:id="welcomeText"/>
-  <Button text="Hello!" onAction="#onHelloButtonClick"/>
-</VBox>
+<AnchorPane prefHeight="595.0" prefWidth="613.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.profinal.HelloController">
+   <children>
+      <VBox alignment="CENTER" spacing="20.0">
+          <padding>
+              <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+          </padding>
+      
+          <Label fx:id="welcomeText" />
+      </VBox>
+       <Button layoutX="115.0" layoutY="45.0" onAction="#AbrirArchivo" onZoomFinished="#AbrirArchivo" text="Cargar Archivo" />
+      <Button layoutX="391.0" layoutY="45.0" mnemonicParsing="false" onAction="#Ejecutar" prefHeight="25.0" prefWidth="95.0" text="Ejecutar" />
+      <TextField fx:id="textFin" layoutX="377.0" layoutY="121.0" prefHeight="25.0" prefWidth="124.0" />
+      <TextField fx:id="textInicio" layoutX="101.0" layoutY="121.0" prefHeight="25.0" prefWidth="124.0" />
+      <Label layoutX="101.0" layoutY="96.0" text="Inicio" />
+      <Label layoutX="377.0" layoutY="96.0" text="Fin" />
+      <TextArea fx:id="textOutput" editable="false" layoutX="101.0" layoutY="178.0" prefHeight="386.0" prefWidth="401.0" wrapText="true" />
+      <Label layoutX="102.0" layoutY="155.0" text="Output" />
+   </children>
+</AnchorPane>

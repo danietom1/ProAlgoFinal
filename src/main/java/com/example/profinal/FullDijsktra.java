@@ -4,51 +4,105 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 
-public class ProAlgo {
+public class FullDijsktra {
 
     public static Map<String, Integer> Nombre_Numero = new HashMap<>();
     public static Map<Integer, String> Numero_Nombre = new HashMap<>();
     public static Stack<Number> pilaEstaciones = new Stack<Number>();
     public static Stack<Number> pilaRutas = new Stack<Number>();
     public static Stack<Number> pilaDeltas = new Stack<Number>();
+    public static String resultFinal;
+    public static String[] resultEstaciones;
+    public static int[] resultRutas;
     public static int[] d;
     public static int[] pi;
     public static String[] state;
     public static int[] Rutas;
 
-    public static void main(String[] args) {
-        String FilePath = "src/Test.txt";
-        boolean testMode = false;
-        ArrayList[] grafo;
 
-        if (testMode){
-            grafo = GrafoTest(true);
-        } else {
-            grafo = LeerArchivo(FilePath);
-        }
 
-        System.out.println("Hello world!");
-        System.out.println();
-
-        Dijsktra(grafo,"A");
-
-        reconstruirRuta("F");
+    public static Map<String, Integer> getNombre_Numero() {
+        return Nombre_Numero;
     }
 
+    public static void setNombre_Numero(Map<String, Integer> nombre_Numero) {
+        Nombre_Numero = nombre_Numero;
+    }
 
+    public static Map<Integer, String> getNumero_Nombre() {
+        return Numero_Nombre;
+    }
+
+    public static void setNumero_Nombre(Map<Integer, String> numero_Nombre) {
+        Numero_Nombre = numero_Nombre;
+    }
+
+    public static Stack<Number> getPilaEstaciones() {
+        return pilaEstaciones;
+    }
+
+    public static void setPilaEstaciones(Stack<Number> pilaEstaciones) {
+        FullDijsktra.pilaEstaciones = pilaEstaciones;
+    }
+
+    public static Stack<Number> getPilaRutas() {
+        return pilaRutas;
+    }
+
+    public static void setPilaRutas(Stack<Number> pilaRutas) {
+        FullDijsktra.pilaRutas = pilaRutas;
+    }
+
+    public static Stack<Number> getPilaDeltas() {
+        return pilaDeltas;
+    }
+
+    public static void setPilaDeltas(Stack<Number> pilaDeltas) {
+        FullDijsktra.pilaDeltas = pilaDeltas;
+    }
+
+    public static int[] getD() {
+        return d;
+    }
+
+    public static void setD(int[] d) {
+        FullDijsktra.d = d;
+    }
+
+    public static int[] getPi() {
+        return pi;
+    }
+
+    public static void setPi(int[] pi) {
+        FullDijsktra.pi = pi;
+    }
+
+    public static String[] getState() {
+        return state;
+    }
+
+    public static void setState(String[] state) {
+        FullDijsktra.state = state;
+    }
+
+    public static int[] getRutas() {
+        return Rutas;
+    }
+
+    public static void setRutas(int[] rutas) {
+        Rutas = rutas;
+    }
+
+    public FullDijsktra() {
+    }
 
     public static ArrayList[] LeerArchivo(String FilePath) {
-
-
         //Hallar cantidad de vertices del
         int cantVertices = cantidadVertices(FilePath);
-
         ArrayList[] grafo = new ArrayList[cantVertices];
-
         ArrayList<int[]> aristas;
-
         int arista[];
-
+        int count=0;
         try (Scanner scanner = new Scanner(new File(FilePath))) {
             while (scanner.hasNext()){
                 int VerticeOrigen = 0;
@@ -59,15 +113,12 @@ public class ProAlgo {
                 boolean hallarOrigen = true;
                 String[] inputText = scanner.nextLine().split(" ");
                 if(inputText.length != 1){
-
-                    int count=0;
                     for (int i = 0; i < inputText.length; i++){
                         //System.out.print(inputText[i].toString()+" ");
                         if (i == 0){
                             Ruta = Integer.parseInt(inputText[i]);
                             continue;
                         }
-
                         switch (countLecturas){
                             case 1:
                                 if (/*VerticeOrigen == 0*/hallarOrigen){
@@ -114,22 +165,16 @@ public class ProAlgo {
                                 countLecturas = 0;
                                 hallarOrigen = false;
                                 break;
-
                         }
-
                         countLecturas++;
-
                     }
-
                 }
-
             }
             MostrarGrafo(grafo);
             return grafo;
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     private static int cantidadVertices(String FilePath){
@@ -302,11 +347,11 @@ public class ProAlgo {
         }
     }
 
-    private static void Dijsktra(ArrayList[] grafo, String origenText){
+    static void Dijsktra(ArrayList[] grafo, String origenText){
         int origen = Nombre_Numero.get(origenText);
         int n = grafo.length;
 
-        //Arreglo Delta
+        //Arreglo Delta iniciado con el valor maximo permitido para Integer
         d = new int[n];
         for (int i = 0; i < d.length; i++) {
             d[i] = Integer.MAX_VALUE;
@@ -316,53 +361,58 @@ public class ProAlgo {
         //Arreglo Pi
         pi = new int[n];
 
-        //Arreglo estado
+        //Arreglo estado inicializado con "N"
         state = new String[n];
         for (int i = 0; i < state.length; i++) {
             state[i] = "N";
         }
         state[origen] = "D";
 
-        //Arreglo rutas
+        //Arreglo rutas, este es un nuevo arreglo debido a la modificacion
+        // solicitada para contemplar los transbordos
         Rutas = new int[n];
-
 
         //Cola de prioridad
         PriorityQueue<Map.Entry<Integer, Integer>> Q = new PriorityQueue<>(Map.Entry.comparingByValue());
-
+        //Se agrega el Vertice origen como primer elemento en la cola de prioridad
         Q.offer(new AbstractMap.SimpleEntry<>(origen, 0));
 
-
-
         while (!Q.isEmpty()){
+            //Se saca un elemento de la cola de prioridad
             Map.Entry<Integer, Integer> verticeTemp = Q.remove();
-            int DeltaTemp = verticeTemp.getValue();
+            //Si el vertice esta explorado se omite
             if (state[verticeTemp.getKey()] == "E") continue;
+            //Se trae la lista de aristas relacionadas al vertice que se esta validando
             ArrayList<int[]> vertice = grafo[verticeTemp.getKey()];
-            if (vertice != null){
-                for (int[] vert:vertice
+            if (vertice != null){ //Se valida que el vertice tenga aristas
+                for (int[] vert:vertice //Ciclo por cada arista del vertice
                 ) {
-                    int TransTime = 0;
-                    if(state[vert[0]] == "E") continue;
+                    int TransTime = 0; //Variable de tiempo de transbordo
+                    if(state[vert[0]] == "E") continue; //Si el vertice esta explorado se omite
+                    //Se realiza la validacion para detectar si se esta realizando un transbordo
                     if((origen != verticeTemp.getKey()) && (vert[2] != Rutas[verticeTemp.getKey()])){
+                        //Se establecen los 3 minutos en segundos
                         TransTime = 180;
-
                     }else {
                         TransTime = 0;
                     }
+                    //Se comprueba si la nueva delta es una mejor opcion teniendo en cuenta el transbordo
                     if (d[vert[0]] > d[verticeTemp.getKey()]+vert[1]+TransTime){
                         d[vert[0]] = d[verticeTemp.getKey()]+vert[1]+TransTime;
                         pi[vert[0]] = verticeTemp.getKey();
                         state[vert[0]] = "D";
                         Rutas[vert[0]] = vert[2];
+                        //Se agrega el nuevo vertice encontrado
                         Q.offer(new AbstractMap.SimpleEntry<>(vert[0], d[vert[0]]));
                     }
                 }
+                //Se establece el estado Explorado para el vertice que se estaba validando
                 state[verticeTemp.getKey()] = "E";
             }
-
         }
+        //Fin del algoritmo Dijsktra
 
+        //Ciclos para mostrar informacion por consola sobre los resultados
         System.out.print("        ");
         for (int i = 0; i < pi.length; i++) {
             System.out.print(Numero_Nombre.get(i)+"   ");
@@ -394,41 +444,94 @@ public class ProAlgo {
         }
     }
 
-    private static void reconstruirRuta(String dest){
+    static void reconstruirRuta(String dest, String orig){
         int destino = Nombre_Numero.get(dest);
-
+        int origen = Nombre_Numero.get(orig);
+        boolean master = false;
+        if(origen == 0) master = true;
         try{
             while (true){
                 pilaEstaciones.add(destino);
                 pilaRutas.add(Rutas[destino]);
-                if(d[destino]==Integer.MAX_VALUE) throw new Exception("Exception message");;
-                destino = pi[destino];
-                if (destino == 0) {
-                    pilaEstaciones.add(destino);
+                if(d[destino]==Integer.MAX_VALUE) throw new Exception("Exception message");
+                if (d[destino] == 0) {
                     break;
                 }
+                destino = pi[destino];
             }
             System.out.println();
             System.out.println();
             System.out.println("Ruta Final");
+            resultEstaciones = new String[pilaEstaciones.size()];
+            int count=0;
             while(!pilaEstaciones.isEmpty()){
-                System.out.print(Numero_Nombre.get(pilaEstaciones.pop())+" ");
+                Number estacion = pilaEstaciones.pop();
+                System.out.print(Numero_Nombre.get(estacion)+" ");
+                resultEstaciones[count] = Numero_Nombre.get(estacion);
+                count++;
             }
             System.out.println();
             System.out.print("  ");
+            resultRutas = new int[pilaRutas.size()];
+            count=0;
             while (!pilaRutas.isEmpty()){
-                System.out.print(pilaRutas.pop()+" ");
+                Number ruta = pilaRutas.pop();
+                System.out.print(ruta+" ");
+                resultRutas[count] = (int) ruta;
+                count++;
             }
+            resultFinal ="Desde el paradero "+resultEstaciones[0]+" tome la ruta "+resultRutas[1];
+            int tempParadero = resultRutas[1];
+            for (int i = 1; i < resultEstaciones.length; i++) {
+                if(i != resultEstaciones.length-1){
+                    if(tempParadero != resultRutas[i+1]){
+                        tempParadero = resultRutas[i+1];
+                        resultFinal = resultFinal+" hasta la estacion "+resultEstaciones[i]+", ";
+                        resultFinal = resultFinal+"Desde el paradero "+resultEstaciones[i]+" tome la ruta "+resultRutas[i+1];
+                    }
+                }else {
+                    resultFinal = resultFinal+" hasta la estacion "+resultEstaciones[i];
+                }
+            }
+            resultFinal = resultFinal+"  \nTiempo total del trayecto: "+d[Nombre_Numero.get(dest)];
+            System.out.println(resultFinal);
+
 
         } catch (Exception e) {
             System.out.println();
             System.out.println();
             System.out.println("Ruta Final");
             System.out.println("No hay ruta disponible");
+            resultFinal = "No hay ruta disponible";
             //throw new RuntimeException(e);
 
         }
 
+
+    }
+
+    public static String getResultFinal() {
+        return resultFinal;
+    }
+
+    public static void setResultFinal(String resultFinal) {
+        FullDijsktra.resultFinal = resultFinal;
+    }
+
+    public static String[] getResultEstaciones() {
+        return resultEstaciones;
+    }
+
+    public static void setResultEstaciones(String[] resultEstaciones) {
+        FullDijsktra.resultEstaciones = resultEstaciones;
+    }
+
+    public static int[] getResultRutas() {
+        return resultRutas;
+    }
+
+    public static void setResultRutas(int[] resultRutas) {
+        FullDijsktra.resultRutas = resultRutas;
     }
 }
 
